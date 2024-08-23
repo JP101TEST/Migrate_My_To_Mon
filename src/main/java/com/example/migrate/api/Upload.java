@@ -10,7 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/upload")
-@Log4j2
 public class Upload {
     private final UploadService uploadService;
 
@@ -20,10 +19,11 @@ public class Upload {
 
     @PostMapping("")
     public Object upload(
-            @RequestParam("file") MultipartFile file
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("table") String tableName
     ) {
-        System.out.println(uploadService.getClass().getName());
-        return uploadService.upload(file);
+        //System.out.println(uploadService.getClass().getName().split("\\.")[uploadService.getClass().getName().split("\\.").length-1].replaceAll("([A-Z])", " $1").trim().toLowerCase());
+        return uploadService.upload(file,tableName);
     }
 
 }

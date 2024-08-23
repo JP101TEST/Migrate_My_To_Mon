@@ -10,7 +10,7 @@ public class TechCompanies {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private int id;
+    private long id;
 
     @Column(name = "ranking", nullable = false)
     private int ranking;

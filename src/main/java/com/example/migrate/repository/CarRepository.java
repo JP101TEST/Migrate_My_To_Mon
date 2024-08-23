@@ -1,12 +1,12 @@
 package com.example.migrate.repository;
 
-import com.example.migrate.entity.TechCompanies;
+import com.example.migrate.entity.Car;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface TechCompaniesRepository extends JpaRepository<TechCompanies, Long> {
-    Optional<TechCompanies> findByCompany(String company);
+public interface CarRepository extends JpaRepository<Car, Long> {
+    Optional<Car> findByModelName(String modelName);
 }
