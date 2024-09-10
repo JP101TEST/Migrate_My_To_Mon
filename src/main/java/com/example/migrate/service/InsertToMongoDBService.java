@@ -2,8 +2,7 @@ package com.example.migrate.service;
 
 import com.example.migrate.dto.response.ResponseGeneral;
 import com.example.migrate.exception.CustomException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.migrate.service.utility.readFile.json.ReadJsonFile;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -13,19 +12,11 @@ import org.bson.Document;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @Log4j2
-public class InsertToMongoDBService {
-    private final String MONGODB_URL = "mongodb://root:root@localhost:27017/";
-    private final String MONGODB_DATABASE = "datanosql";
-    private final ObjectMapper objectMapper;
-
-    public InsertToMongoDBService(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
+public class InsertToMongoDBService extends ServiceAbstract {
 
     public Object insertByJson(MultipartFile json, String collectionName) {
         try {
@@ -91,7 +82,6 @@ public class InsertToMongoDBService {
             throw new CustomException(e.getMessage());
         }
 
-
         if (file.isEmpty()) {
             message = "File " + fileType + " is empty.";
             log.error(message);
@@ -113,38 +103,10 @@ public class InsertToMongoDBService {
     private List<Document> readFileToListDoc(MultipartFile file, String fileType) throws Exception {
         switch (fileType) {
             case "json":
-                return readJsonToListDoc(file);
+                return ReadJsonFile.readJsonToListDoc(file);
             default:
                 return null;
         }
     }
 
-    private List<Document> readJsonToListDoc(MultipartFile file) throws Exception {
-        String message = "";
-        JsonNode jsonNode = null;
-        List<Document> result = new ArrayList<>();
-        try {
-            jsonNode = objectMapper.readTree(file.getInputStream());
-            if (jsonNode == null || jsonNode.isEmpty()) {
-                message = "Can't read file " + file.getOriginalFilename() + ".";
-                log.error(message);
-                throw new CustomException(message);
-            }
-            for (JsonNode child : jsonNode) {
-                result.add(objectMapper.convertValue(child, Document.class));
-            }
-            if (result.size() < 1) {
-                message = "Can read file but convert to list document is empty.";
-                log.error(message);
-                throw new CustomException(message);
-            }
-        } catch (CustomException e) {
-            log.error(e.getMessage());
-            throw new CustomException(e.getMessage());
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new CustomException(e.getMessage());
-        }
-        return result;
-    }
 }

@@ -1,7 +1,5 @@
 package com.example.migrate.api;
 
-import com.example.migrate.service.UploadService;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -10,20 +8,23 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/upload")
-public class Upload {
-    private final UploadService uploadService;
+public class Upload extends ApiAbstract {
 
-    public Upload(UploadService uploadService) {
-        this.uploadService = uploadService;
-    }
-
-    @PostMapping("")
-    public Object upload(
+    @PostMapping("/mongodb")
+    public Object uploadFileToMongoDB(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("table") String tableName
+            @RequestParam("collection") String collection
     ) {
-        //System.out.println(uploadService.getClass().getName().split("\\.")[uploadService.getClass().getName().split("\\.").length-1].replaceAll("([A-Z])", " $1").trim().toLowerCase());
-        return uploadService.upload(file,tableName);
+        return uploadToMongoDBService.upload(file, collection);
     }
+
+    @PostMapping("/mysql")
+    public Object uploadFileToMySql(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("table") String table
+    ) {
+        return uploadFileToMySqlService.upload(file, table);
+    }
+
 
 }

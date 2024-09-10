@@ -1,16 +1,12 @@
 package com.example.migrate.service;
 
-import com.example.migrate.controller.ReadFile;
 import com.example.migrate.dto.response.ResponseGeneral;
 import com.example.migrate.entity.Car;
 import com.example.migrate.entity.TechCompanies;
 import com.example.migrate.entity.Test;
 import com.example.migrate.exception.CustomException;
-import com.example.migrate.repository.CarRepository;
-import com.example.migrate.repository.TechCompaniesRepository;
-import com.example.migrate.repository.TestRepository;
+import com.example.migrate.service.utility.readFile.csv.ReadCsvFile;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,28 +16,16 @@ import java.util.Optional;
 
 @Service
 @Log4j2
-public class UploadService {
-    private final ObjectMapper objectMapper;
-    private final TechCompaniesRepository techCompaniesRepository;
-    private final CarRepository carRepository;
-    private final TestRepository testRepository;
-
+public class UploadService extends ServiceAbstract {
     private String fileName;
-
-    public UploadService(ObjectMapper objectMapper, TechCompaniesRepository techCompaniesRepository, CarRepository carRepository, TestRepository testRepository) {
-        this.objectMapper = objectMapper;
-        this.techCompaniesRepository = techCompaniesRepository;
-        this.carRepository = carRepository;
-        this.testRepository = testRepository;
-    }
 
     public Object upload(MultipartFile file, String tableName) {
         try {
             // Read file
-            List<JsonNode> data = ReadFile.readCsv(file);
+            List<JsonNode> data = ReadCsvFile.readCsvToListJsonNode(file);
 
             fileName = file.getOriginalFilename();
-            System.out.println(data.size());
+            //System.out.println(data.size());
             insertToMySql(data, tableName);
 
             log.info("Upload |{}| successful.", file.getOriginalFilename());
@@ -59,7 +43,6 @@ public class UploadService {
                     try {
                         handleCarInsertion(dataInsert);
                     } catch (Exception e) {
-                        log.error(e.fillInStackTrace());
                         log.error("Upload | Error processing data for table | " + tableName + " | from | " + fileName + "|.");
                         throw new CustomException("Upload | Error processing data for table | " + tableName + " | from | " + fileName + "|.");
                     }
@@ -104,15 +87,14 @@ public class UploadService {
     }
 
     private void handleTestInsertion(JsonNode dataInsert) throws Exception {
-        System.out.println("testRepository.findAll().size() : "+ testRepository.findAll().size());
+        //System.out.println("testRepository.findAll().size() : " + testRepository.findAll().size());
         while (true) {
-            System.out.println(testRepository.findAll().size());
+            //System.out.println(testRepository.findAll().size());
             if (testRepository.findAll().size() == 10000) {
                 throw new CustomException("Max is 10000");
             }
             Test test = objectMapper.readValue(dataInsert.toString(), Test.class);
             testRepository.save(test);
         }
-
     }
 }

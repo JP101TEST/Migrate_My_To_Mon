@@ -1,20 +1,18 @@
 package com.example.migrate.api;
 
-import com.example.migrate.service.MigrateService;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/migrate")
-public class Migrate {
-    private final MigrateService migrateService;
-
-    public Migrate(MigrateService migrateService) {
-        this.migrateService = migrateService;
-    }
+public class Migrate extends ApiAbstract {
 
     @PostMapping("")
-    public Object migrate(@RequestParam("table") String tableName,@RequestParam("limit") int limit) {
-        return migrateService.migrate(tableName,limit);
+    public Object migrate(@RequestParam("table") String tableName) {
+        return migrate.migrate(tableName);
     }
+
+
 }

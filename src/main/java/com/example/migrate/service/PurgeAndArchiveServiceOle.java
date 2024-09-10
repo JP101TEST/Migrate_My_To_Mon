@@ -2,7 +2,6 @@ package com.example.migrate.service;
 
 import com.example.migrate.dto.response.ResponseGeneral;
 import com.example.migrate.exception.CustomException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -24,16 +23,8 @@ import java.util.List;
 
 @Service
 @Log4j2
-public class PurgeAndArchiveService {
-    private final String MONGODB_URL = "mongodb://root:root@localhost:27017/";
-    private final String MONGODB_DATABASE = "datanosql";
-    private final String LOCAL_STORE = "local";
+public class PurgeAndArchiveServiceOle extends ServiceAbstract {
 
-    private final ObjectMapper objectMapper;
-
-    public PurgeAndArchiveService(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     public Object purgeAndArchive(String collectionName, String limit, String beforeYear) {
         long start = System.currentTimeMillis();
@@ -44,18 +35,18 @@ public class PurgeAndArchiveService {
             return new ResponseGeneral("400", e.getMessage());
         }
 
-        MongoCollection mongoCollection = MongoClients.create(MONGODB_URL).getDatabase(MONGODB_DATABASE).getCollection(collectionName);
+        MongoCollection<Document> mongoCollection = MongoClients.create(MONGODB_URL).getDatabase(MONGODB_DATABASE).getCollection(collectionName);
         int maxFileSplitSize = getCountFileToSplit(mongoCollection, limit, beforeYear);
         try {
             for (int fileSplitIndex = 1; fileSplitIndex <= maxFileSplitSize; fileSplitIndex++) {
                 // Archive
                 List<Document> documentList = getListDocumentFromCollectionByLessYear(mongoCollection, limit, beforeYear);
                 removeId(documentList);
-                managementArchive(documentList,collectionName,fileSplitIndex ,beforeYear);
+                managementArchive(documentList, collectionName, fileSplitIndex, beforeYear);
                 // Purge
                 removeDocListInCollection(mongoCollection, documentList);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             return new ResponseGeneral("400", e.getMessage());
         }
 
@@ -219,47 +210,48 @@ public class PurgeAndArchiveService {
         return (int) Math.ceilDiv(countDocFromSearch, Long.parseLong(limit));
     }
 
-    public void testCheckAndPrepareStorageInDay(){
-        Path archiveCollectionDirectory = Paths.get(LOCAL_STORE,getDayWhenArchiveDirectory(),"collectionName");
+    public void testCheckAndPrepareStorageInDay() {
+        Path archiveCollectionDirectory = Paths.get(LOCAL_STORE, getDayWhenArchiveDirectory(), "collectionName");
         checkAndPrepareStorageLocation(archiveCollectionDirectory);
     }
 
-    private void removeId(List<Document> documentList){
-        for (Document document:documentList){
+    private void removeId(List<Document> documentList) {
+        for (Document document : documentList) {
             document.remove("_id");
         }
     }
-    private void managementArchive(List<Document> documentList,String collectionName,int fileSplitIndex,String lessYer) throws Exception{
-        Path archiveCollectionDirectory = Paths.get(LOCAL_STORE,getDayWhenArchiveDirectory(),collectionName);
+
+    private void managementArchive(List<Document> documentList, String collectionName, int fileSplitIndex, String lessYer) throws Exception {
+        Path archiveCollectionDirectory = Paths.get(LOCAL_STORE, getDayWhenArchiveDirectory(), collectionName);
         checkAndPrepareStorageLocation(archiveCollectionDirectory);
-        archiveToFileJson(documentList,archiveCollectionDirectory,fileSplitIndex,lessYer);
+        archiveToFileJson(documentList, archiveCollectionDirectory, fileSplitIndex, lessYer);
 
     }
 
-    private void checkAndPrepareStorageLocation( Path archiveCollectionDirectory) {
+    private void checkAndPrepareStorageLocation(Path archiveCollectionDirectory) {
         String[] directoryStore = archiveCollectionDirectory.toString().split("\\\\");
-        if (!Path.of(directoryStore[0]).toFile().exists()){
+        if (!Path.of(directoryStore[0]).toFile().exists()) {
             Path.of(directoryStore[0]).toFile().mkdir();
         }
-        if (!Path.of(directoryStore[0],directoryStore[1]).toFile().exists()){
-            Path.of(directoryStore[0],directoryStore[1]).toFile().mkdir();
+        if (!Path.of(directoryStore[0], directoryStore[1]).toFile().exists()) {
+            Path.of(directoryStore[0], directoryStore[1]).toFile().mkdir();
         }
-        if (!archiveCollectionDirectory.toFile().exists()){
+        if (!archiveCollectionDirectory.toFile().exists()) {
             archiveCollectionDirectory.toFile().mkdir();
         }
     }
 
 
-    private String getDayWhenArchiveDirectory(){
+    private String getDayWhenArchiveDirectory() {
         return LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")).toString();
     }
 
-    private void archiveToFileJson(List<Document> documentList,Path archiveCollectionDirectory,int fileSplitIndex,String lessYear)throws CustomException {
-        String nameFile = archiveCollectionDirectory.toString().split("\\\\")[2] + "_"+lessYear+"_"+fileSplitIndex+".json";
-        Path fileToCreate = Paths.get(archiveCollectionDirectory.toString(),nameFile);
+    private void archiveToFileJson(List<Document> documentList, Path archiveCollectionDirectory, int fileSplitIndex, String lessYear) throws CustomException {
+        String nameFile = archiveCollectionDirectory.toString().split("\\\\")[2] + "_" + lessYear + "_" + fileSplitIndex + ".json";
+        Path fileToCreate = Paths.get(archiveCollectionDirectory.toString(), nameFile);
         try {
-            Files.write(fileToCreate.toAbsolutePath(),objectMapper.writeValueAsBytes(documentList));
-        }catch (Exception e){
+            Files.write(fileToCreate.toAbsolutePath(), objectMapper.writeValueAsBytes(documentList));
+        } catch (Exception e) {
             log.error(e.getMessage());
             throw new CustomException(e.getMessage());
         }

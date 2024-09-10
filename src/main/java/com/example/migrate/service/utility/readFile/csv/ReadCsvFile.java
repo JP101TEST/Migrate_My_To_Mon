@@ -1,10 +1,8 @@
-package com.example.migrate.controller;
-
-//import com.opencsv.CSVReader;
+package com.example.migrate.service.utility.readFile.csv;
 
 import com.example.migrate.exception.CustomException;
+import com.example.migrate.service.utility.readFile.ReadFile;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
@@ -13,24 +11,25 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Log4j2
-public class ReadFile {
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+public class ReadCsvFile extends ReadFile {
 
-
-    public static List<JsonNode> readCsv(MultipartFile file) throws CustomException {
+    public static List<JsonNode> readCsvToListJsonNode(MultipartFile file) throws CustomException {
 
         String massage;
-        if (file == null||file.isEmpty()){
+        if (file == null || file.isEmpty()) {
             massage = "File input is empty please select file";
             log.error(massage);
             throw new CustomException(massage);
         }
 
-        if (!file.getOriginalFilename().split("\\.")[file.getOriginalFilename().split("\\.").length-1].equals("csv")) {
-            massage = "This file | "+file.getOriginalFilename()+" | is not csv";
+        if (!file.getOriginalFilename().split("\\.")[file.getOriginalFilename().split("\\.").length - 1].equals("csv")) {
+            massage = "This file | " + file.getOriginalFilename() + " | is not csv";
             log.error(massage);
             throw new CustomException(massage);
         }
@@ -42,7 +41,7 @@ public class ReadFile {
             // Get header
             String[] header = csvReader.readNext();
             if (header == null || header.length == 0) {
-                massage = "This file | "+file.getOriginalFilename()+" | is empty.";
+                massage = "This file | " + file.getOriginalFilename() + " | is empty.";
                 log.error(massage);
                 throw new CustomException(massage);
             }

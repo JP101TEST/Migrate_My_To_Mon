@@ -5,11 +5,7 @@ import com.example.migrate.entity.Car;
 import com.example.migrate.entity.TechCompanies;
 import com.example.migrate.entity.Test;
 import com.example.migrate.exception.CustomException;
-import com.example.migrate.repository.CarRepository;
-import com.example.migrate.repository.TechCompaniesRepository;
-import com.example.migrate.repository.TestRepository;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -28,21 +24,11 @@ import java.util.Set;
 
 @Service
 @Log4j2
-public class MigrateService {
-    private final ObjectMapper objectMapper;
-    private final TechCompaniesRepository techCompaniesRepository;
-    private final CarRepository carRepository;
-    private final TestRepository testRepository;
-    private final String MONGODB_URL = "mongodb://root:root@localhost:27017/";
-    private final String MONGODB_DATABASE = "datanosql";
+public class MigrateServiceOle extends ServiceAbstract {
     private final Set<String> validTableNames;
     private int maxRow;
 
-    public MigrateService(ObjectMapper objectMapper, TechCompaniesRepository techCompaniesRepository, CarRepository carRepository, TestRepository testRepository) {
-        this.objectMapper = objectMapper;
-        this.techCompaniesRepository = techCompaniesRepository;
-        this.carRepository = carRepository;
-        this.testRepository = testRepository;
+    public MigrateServiceOle() {
         this.validTableNames = new HashSet<>();
         validTableNames.add("car");
         validTableNames.add("tech_companies");

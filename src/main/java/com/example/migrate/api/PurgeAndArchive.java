@@ -1,26 +1,17 @@
 package com.example.migrate.api;
 
-import com.example.migrate.service.PurgeAndArchiveService;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/purge_Archive")
-public class PurgeAndArchive {
-    private final PurgeAndArchiveService purgeAndArchiveService;
-
-    public PurgeAndArchive(PurgeAndArchiveService purgeAndArchiveService) {
-        this.purgeAndArchiveService = purgeAndArchiveService;
-    }
+public class PurgeAndArchive extends ApiAbstract {
 
     @PostMapping("")
-    public Object purgeAndArchive(@RequestParam("collection") String collectionName,@RequestParam("limit") String limit,@RequestParam("beforeYear") String beforeYear) {
-        return purgeAndArchiveService.purgeAndArchive(collectionName,limit,beforeYear);
+    public Object purgeAndArchive(@RequestParam("collection") String collectionName,  @RequestParam("year") String yearSelect) {
+        return  purgeAndArchiveService.purgeAndArchive(collectionName, yearSelect);
     }
 
-
-    @PostMapping("/test")
-    public void test(){
-        purgeAndArchiveService.testCheckAndPrepareStorageInDay();
-    }
 }
