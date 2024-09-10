@@ -1,7 +1,8 @@
-package com.example.migrate.service;
+package com.example.migrate.service.ole;
 
 import com.example.migrate.dto.response.ResponseGeneral;
 import com.example.migrate.exception.CustomException;
+import com.example.migrate.service.ServiceAbstract;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
